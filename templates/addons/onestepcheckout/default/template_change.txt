@@ -1,0 +1,155 @@
+--- config.php	Tue Jan 20 00:26:08 1970
++++ config.php	Tue Jan 20 00:26:08 1970
+@@ -207,6 +207,22 @@
+ 						<?php echo $formFieldOneStepCheckoutTemplate->getInputByName('order_products') ?>
+ 					</td>
+ 				</tr>
++				<tr>
++					<td>
++						<?php echo $formFieldOneStepCheckoutTemplate->getLabelByName('order_shipping_desc') ?>
++					</td>
++					<td style="padding: 5px 10px">
++						<?php echo $formFieldOneStepCheckoutTemplate->getInputByName('order_shipping_desc') ?>
++					</td>
++				</tr>
++				<tr>
++					<td>
++						<?php echo $formFieldOneStepCheckoutTemplate->getLabelByName('order_payment_desc') ?>
++					</td>
++					<td style="padding: 5px 10px">
++						<?php echo $formFieldOneStepCheckoutTemplate->getInputByName('order_payment_desc') ?>
++					</td>
++				</tr>
+ 			</table>
+ 		</td>
+ 	</tr>
+--- config.xml	Tue Jan 20 00:26:08 1970
++++ config.xml	Tue Jan 20 00:26:08 1970
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <form>
+-	<fields>
++	<fields addfieldpath="/components/com_jshopping/templates/addons/onestepcheckout/default/params">
+ 		<fieldset name="template">  
+ 			<field
+ 				name="params[message_adress]"
+@@ -263,6 +263,18 @@
+ 				<option
+ 					value="0">JNO</option>
+ 			</field>
++			<field  
++				name="params[order_shipping_desc]" 
++				type="shipping" 
++				default="0"					
++				label="JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_SHIPPING_DESC" 
++				description="JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_SHIPPING_DESC_DESC" />
++			<field  
++				name="params[order_payment_desc]" 
++				type="payment" 
++				default="0"					
++				label="JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_PAYMENT_DESC" 
++				description="JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_PAYMENT_DESC_DESC" />
+ 		</fieldset>
+ 	</fields>
+ </form>
+\ No newline at end of file
+--- finish.php	Tue Jan 20 00:26:08 1970
++++ finish.php	Tue Jan 20 00:26:08 1970
+@@ -12,7 +12,7 @@
+ 
+ defined('_JEXEC') or die;
+ ?>
+-<div class="uk-panel uk-panel-box uk-panel-header">
++<div class="uk-panel uk-panel-box uk-panel-header finish-page">
+ 	<h3 class="uk-panel-title">
+ 		<?php echo JText::_('JSHOP_ONESTEPCHECKOUT_FINISH_TITLE'.(($this->addonParams->finish_register && $this->register) ? '_REGISTER' : '')) ?>
+ 	</h3>
+@@ -114,7 +114,20 @@
+ 		}
+ 		?>
+ 	</dl>
+-	<?php echo JText::_('JSHOP_ONESTEPCHECKOUT_FINISH_TEXT_ORDER_AFTER') ?>
++	<?php if (is_array($this->addonParams->order_shipping_desc) && in_array($this->order->shipping_method_id, $this->addonParams->order_shipping_desc)) { ?>
++	<div id="shipping_description">
++		<div class="shipping_description_title"><i class="uk-icon-truck"></i> <?php echo JText::_('JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_SHIPPING_DESC') ?></div>
++		<div class="shipping_description_text"><?php echo $this->order->shipping_desc ?></div>
++	</div>
++	<?php } ?>
++	<br/>
++	<?php if (is_array($this->addonParams->order_payment_desc) && in_array($this->order->payment_method_id, $this->addonParams->order_payment_desc)) { ?>
++	<div id="payment_description">
++		<div class="payment_description_title"><i class="uk-icon-money"></i> <?php echo JText::_('JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_PAYMENT_DESC') ?></div>
++		<div class="payment_description_text"><?php echo $this->order->payment_desc ?></div>
++	</div>
++	<?php } ?>
++	<div class="uk-alert"><?php echo JText::_('JSHOP_ONESTEPCHECKOUT_FINISH_TEXT_ORDER_AFTER') ?></div>
+ 	<hr class="uk-grid-divider" />
+ 	<?php } ?>
+ 	<?php if ($this->contentRegistration) { ?>
+--- main.php	Tue Jan 20 00:26:08 1970
++++ main.php	Tue Jan 20 00:26:08 1970
+@@ -13,21 +13,21 @@
+ defined('_JEXEC') or die;
+ 
+ if ($this->step2show) {
+-	$col1class = $this->addonParams->columns_number == 1 ? 'uk-width-1-1' : 'uk-width-3-10';
++	$col1class = $this->addonParams->columns_number == 1 ? 'uk-width-1-1' : 'uk-width-large-3-10 uk-width-medium-1-1 uk-width-small-1-1';
+ } else {
+ 	$col1class = 'uk-hidden';
+ }
+ if ($this->step3show ==1 || $this->step4show ==1) {
+-	$col2class = $this->addonParams->columns_number == 1 ? 'uk-width-1-1' : 'uk-width-3-10';
++	$col2class = $this->addonParams->columns_number == 1 ? 'uk-width-1-1' : 'uk-width-large-3-10 uk-width-medium-1-1 uk-width-small-1-1';
+ } else {
+ 	$col2class = 'uk-hidden';
+ }
+ if ($this->addonParams->columns_number == 1 || (!$this->step2show && $this->step3show != 1 && $this->step4show != 1)) {
+ 	$col3class = 'uk-width-1-1';
+ } else if ($this->addonParams->columns_number == 2 || !$this->step2show || ($this->step3show != 1 && $this->step4show != 1)) {
+-	$col3class = 'uk-width-7-10';
++	$col3class = 'uk-width-large-7-10 uk-width-medium-1-1 uk-width-small-1-1';
+ } else {
+-	$col3class = 'uk-width-4-10';
++	$col3class = 'uk-width-large-4-10 uk-width-medium-1-1 uk-width-small-1-1';
+ }
+ if ($this->addonParams->step_number) {
+ 	$step2number = $this->step2number.'. ';
+--- css/style.css	Tue Jan 20 00:26:08 1970
++++ css/style.css	Tue Jan 20 00:26:08 1970
+@@ -200,4 +200,5 @@
+ #oneStepCheckoutForm  .jshop_nvg_register input {width:80%;}
+ #oneStepCheckoutForm  .jshop_nvg_register select {width:90%;}
+ 
+-#oneStepCheckoutForm  .requiredtext {cursor:help;}
+\ No newline at end of file
++#oneStepCheckoutForm  .requiredtext {cursor:help;}
++.finish-page .shipping_description_title, .finish-page .payment_description_title {font-size:120%;font-weight:bold;border-bottom:2px solid #ccc;}
+\ No newline at end of file
+--- language/en-GB/en-GB.addon_jshopping_onestepcheckout.ini	Tue Jan 20 00:26:08 1970
++++ language/en-GB/en-GB.addon_jshopping_onestepcheckout.ini	Tue Jan 20 00:26:08 1970
+@@ -103,4 +103,8 @@
+ JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_SHIPPING="Delivery"
+ JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_PACKAGE="Package"
+ JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_TOTAL="Total for pay"
+-JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_PRODUCTS="Products"
+\ No newline at end of file
++JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_PRODUCTS="Products"
++JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_SHIPPING_DESC="Shipping information"
++JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_SHIPPING_DESC_DESC="Show description of delivery for the selected methods"
++JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_PAYMENT_DESC="Payment information"
++JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_PAYMENT_DESC_DESC="Show description of payment for the selected methods"
+\ No newline at end of file
+--- language/ru-RU/ru-RU.addon_jshopping_onestepcheckout.ini	Tue Jan 20 00:26:08 1970
++++ language/ru-RU/ru-RU.addon_jshopping_onestepcheckout.ini	Tue Jan 20 00:26:08 1970
+@@ -103,4 +103,8 @@
+ JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_SHIPPING="Доставка"
+ JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_PACKAGE="Упаковка"
+ JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_TOTAL="Всего к оплате"
+-JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_PRODUCTS="Товары"
+\ No newline at end of file
++JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_PRODUCTS="Товары"
++JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_SHIPPING_DESC="Информация о доставке"
++JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_SHIPPING_DESC_DESC="Показывать описание доставки для выбранных методов"
++JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_PAYMENT_DESC="Информация об оплате"
++JSHOP_ONESTEPCHECKOUT_FINISH_ORDER_PAYMENT_DESC_DESC="Показывать описание оплаты для выбранных методов"
+\ No newline at end of file
